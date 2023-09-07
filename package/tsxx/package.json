@@ -1,0 +1,21 @@
+{
+  "name": "tsxx",
+  "version": "1.0.9",
+  "description": "tsx 增强",
+  "scripts": {
+    "build": "node build.mjs && cp src/* dist/",
+    "lint": "prettier --write ."
+  },
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "tsxx": "dist/cli.cjs"
+  },
+  "author": "杨伟杰",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "tsx": "^3.12.8"
+  }
+}
