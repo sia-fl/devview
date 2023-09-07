@@ -1,8 +1,7 @@
 {
   "name": "devview",
   "scripts": {
-    "lint": "prettier --write .",
-    "tsx": "tsxx http/api.ts"
+    "lint": "prettier --write ."
   },
   "workspaces": [
     "package\\*"
