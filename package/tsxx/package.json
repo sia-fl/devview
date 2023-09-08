@@ -1,6 +1,6 @@
 {
   "name": "tsxx",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "tsx 增强",
   "scripts": {
     "build": "node build.mjs && cp -r src/* dist/",

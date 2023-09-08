@@ -65,7 +65,7 @@ const globHmrFiles = getPackageGlobHmrFiles();
 
 const { hookServices, unblocks } = require('./hmr-hook.js');
 hookServices();
-const debouncedFunc = new Debounce(freshFilename => {
+const debouncedHmrFunc = new Debounce(freshFilename => {
   unblocks().then(() => {
     cleanModuleCache(freshFilename);
     try {
@@ -76,15 +76,34 @@ const debouncedFunc = new Debounce(freshFilename => {
     }
   });
 }, 500);
+const debouncedRerunFunc = new Debounce(() => {
+  unblocks().then(() => {
+    // noinspection JSUnresolvedReference
+    for (const cacheName in Module._cache) {
+      // noinspection JSUnresolvedReference
+      delete Module._cache[cacheName];
+    }
+    for (const parentFilename in relationModuleFilenames) {
+      delete relationModuleFilenames[parentFilename];
+    }
+    aliveFilenames.splice(0, aliveFilenames.length);
+    try {
+      aliveFilenames.push(pathname);
+      require(pathname);
+    } catch (e) {
+      console.error(e);
+    }
+  });
+});
 
 /**
  * watch file change
  */
 const chokidar = require('chokidar');
-const chokidarWatcher = chokidar.watch(process.cwd());
+const chokidarWatcher = chokidar.watch(process.cwd(), { ignored: /node_modules/ });
 chokidarWatcher.on('change', freshFilename => {
-  if (aliveFilenames.includes(freshFilename) || globHmrFiles.includes(freshFilename)) {
-    debouncedFunc.call(freshFilename);
+  if (aliveFilenames.includes(freshFilename)) {
+    debouncedHmrFunc.call(freshFilename);
   }
 });
 
@@ -92,5 +111,6 @@ chokidarWatcher.on('add', freshFilename => {
   const newGlobHmrFiles = getPackageGlobHmrFiles();
   if (!globHmrFiles.includes(freshFilename) && newGlobHmrFiles.includes(freshFilename)) {
     globHmrFiles.push(freshFilename);
+    debouncedRerunFunc.call();
   }
 });
