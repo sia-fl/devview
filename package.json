@@ -7,6 +7,7 @@
   "workspaces": [
     "package\\*"
   ],
+  "license": "Apache-2.0",
   "dependencies": {
     "@hono/node-server": "^1.1.1",
     "chokidar": "^3.5.3",

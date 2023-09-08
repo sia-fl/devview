@@ -1,6 +1,6 @@
 {
   "name": "tsxx",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "tsx 增强",
   "scripts": {
     "build": "node build.mjs && cp -r src/* dist/",
@@ -13,7 +13,7 @@
     "tsxx": "dist/cli.cjs"
   },
   "author": "杨伟杰",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "chokidar": "^3.5.3",
     "tsx": "^3.12.8"
