@@ -1,4 +1,5 @@
 const url = require('url');
+const path = require('path');
 const loaders = ['./hmr.mjs', './loaders/loader-block.mjs'];
 const getLoaderUrl = loader => url.pathToFileURL(require.resolve(loader)).toString();
 
@@ -17,6 +18,31 @@ const getSpawnArgs = oldArgs => {
     newArgs.splice(index, 0, ...getLoaderArgs());
   }
   return newArgs;
+};
+
+const getPackageGlobHmrFiles = (cwd = undefined) => {
+  if (!cwd) {
+    cwd = process.cwd();
+  }
+  const packageJson = path.join(cwd, 'package.json');
+  /**
+   * @type {Record<string, any>}
+   */
+  const packageJsonObj = require(packageJson);
+  /**
+   * @type {string[]}
+   */
+  const hmrGlobs = packageJsonObj.hmrGlobs || [];
+  const hmrFiles = [];
+  if (hmrGlobs.length) {
+    const { globSync } = require('glob');
+    const globFiles = globSync(hmrGlobs, { cwd, ignore: 'node_modules/**' });
+    for (const globFile of globFiles) {
+      const fullPath = path.join(cwd, globFile);
+      hmrFiles.push(fullPath);
+    }
+  }
+  return hmrFiles;
 };
 
 class Debounce {
@@ -41,3 +67,5 @@ module.exports.Debounce = Debounce;
 module.exports.getSpawnArgs = getSpawnArgs;
 
 module.exports.getLoaderArgs = getLoaderArgs;
+
+module.exports.getPackageGlobHmrFiles = getPackageGlobHmrFiles;

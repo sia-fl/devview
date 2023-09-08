@@ -16,7 +16,7 @@ const Module = require('node:module');
 const oldLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   const loaded = oldLoad.call(this, request, parent, isMain);
-  if (parent && !/node_modules/.test(parent.filename) && !/package\\tsxx\\/.test(parent.filename)) {
+  if (parent) {
     const { filename, children } = parent;
     if (!aliveFilenames.includes(filename)) {
       aliveFilenames.push(filename);
@@ -48,7 +48,10 @@ const cleanModuleCache = filename => {
   // noinspection JSUnresolvedReference
   delete Module._cache[filename];
   delete relationModuleFilenames[filename];
-  aliveFilenames.splice(aliveFilenames.indexOf(filename), 1);
+  const aliveIndex = aliveFilenames.indexOf(filename);
+  if (aliveIndex !== -1) {
+    aliveFilenames.splice(aliveIndex, 1);
+  }
   for (const parentFilename in relationModuleFilenames) {
     const developFilenames = relationModuleFilenames[parentFilename];
     if (developFilenames.includes(filename)) {
@@ -57,7 +60,9 @@ const cleanModuleCache = filename => {
   }
 };
 
-const { Debounce } = require('./util.js');
+const { Debounce, getPackageGlobHmrFiles } = require('./util.js');
+const globHmrFiles = getPackageGlobHmrFiles();
+
 const { hookServices, unblocks } = require('./hmr-hook.js');
 hookServices();
 const debouncedFunc = new Debounce(freshFilename => {
@@ -76,8 +81,16 @@ const debouncedFunc = new Debounce(freshFilename => {
  * watch file change
  */
 const chokidar = require('chokidar');
-chokidar.watch(process.cwd()).on('change', freshFilename => {
-  if (aliveFilenames.includes(freshFilename)) {
+const chokidarWatcher = chokidar.watch(process.cwd());
+chokidarWatcher.on('change', freshFilename => {
+  if (aliveFilenames.includes(freshFilename) || globHmrFiles.includes(freshFilename)) {
     debouncedFunc.call(freshFilename);
+  }
+});
+
+chokidarWatcher.on('add', freshFilename => {
+  const newGlobHmrFiles = getPackageGlobHmrFiles();
+  if (!globHmrFiles.includes(freshFilename) && newGlobHmrFiles.includes(freshFilename)) {
+    globHmrFiles.push(freshFilename);
   }
 });

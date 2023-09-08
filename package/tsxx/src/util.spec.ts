@@ -1,6 +1,17 @@
 import { test, expect } from 'vitest';
 // @ts-ignore
-import { getSpawnArgs, Debounce, getLoaderArgs } from './util.js';
+import { getSpawnArgs, Debounce, getLoaderArgs, getPackageGlobHmrFiles } from './util.js';
+import * as path from 'path';
+
+test('get package glob hmr files', () => {
+  let cwd = path.join(process.cwd(), 'src/test/glob');
+  const files = getPackageGlobHmrFiles(cwd);
+  expect(files).toEqual([
+    path.join(cwd, 'src/demo03.ts'),
+    path.join(cwd, 'src/demo02.js'),
+    path.join(cwd, 'src/demo01.js')
+  ]);
+});
 
 test('get new spawn args', () => {
   const loaderArgs = getLoaderArgs();
