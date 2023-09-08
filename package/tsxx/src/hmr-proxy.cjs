@@ -1,23 +1,25 @@
 /**
- * require unblocks in any code before
- */
-const { unblocks } = require('./hmr-hook.js');
-/**
- * check pathname
+ * @type {string}
  */
 const pathname = process.argv.slice(1)[0];
 /**
- * @type {{ [filename: string]: string[] }}
+ * @type {{[filename: string]: string[]}}
  */
-let relationModuleFilenames = {};
+const relationModuleFilenames = {};
 /**
  * @type {string[]}
  */
-let aliveFilenames = [pathname];
+const aliveFilenames = [pathname];
 
-let Module = require('node:module');
+const { Debounce } = require('./util.js');
+
+const { hookServices, unblocks } = require('./hmr-hook.js');
+
+hookServices();
+
+const Module = require('node:module');
 // noinspection JSUnresolvedReference
-let oldLoad = Module._load;
+const oldLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   const loaded = oldLoad.call(this, request, parent, isMain);
   if (
@@ -52,7 +54,7 @@ Module._load = function (request, parent, isMain) {
   return loaded;
 };
 
-const clear = filename => {
+const cleanModuleCache = filename => {
   // noinspection JSUnresolvedReference
   delete Module._cache[filename];
   delete relationModuleFilenames[filename];
@@ -60,24 +62,21 @@ const clear = filename => {
   for (const parentFilename in relationModuleFilenames) {
     const developFilenames = relationModuleFilenames[parentFilename];
     if (developFilenames.includes(filename)) {
-      clear(parentFilename);
+      cleanModuleCache(parentFilename);
     }
   }
 };
 
-const reload = freshFilename => {
-  if (/node_modules/.test(freshFilename)) {
-    return null;
-  }
-  unblocks();
-  clear(freshFilename);
-  require(pathname);
-};
-
-const { Debouncer } = require('./util');
-const debouncedFunc = new Debouncer(freshFilename => {
+const debouncedFunc = new Debounce(freshFilename => {
   if (aliveFilenames.includes(freshFilename)) {
-    reload(freshFilename);
+    unblocks().then(() => {
+      cleanModuleCache(freshFilename);
+      try {
+        require(pathname);
+      } catch (e) {
+        console.error(e);
+      }
+    });
   }
 }, 500);
 

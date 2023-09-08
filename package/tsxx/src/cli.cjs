@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-const url = require('url');
-const hmrScript = url.pathToFileURL(require.resolve('./hmr.mjs')).toString();
-
 const childProcess = require('child_process');
 const oldSpawn = childProcess.spawn;
 // noinspection JSValidateTypes
 childProcess.spawn = (command, args, options) => {
-  const newArgs = [...args];
-  const index = newArgs.findIndex(arg => arg === '--loader');
-  if (index !== -1) {
-    newArgs.splice(index, 0, '--loader', hmrScript);
-  }
-  return oldSpawn.call(this, command, newArgs, options);
+  /**
+   * Separate `getSpawnArgs` into a dedicated JavaScript file for testing purposes, as the code in this file is not conducive to testing.
+   */
+  const newArgs = require('./util.js').getSpawnArgs(args);
+  const result = oldSpawn.call(this, command, newArgs, options);
+  /**
+   * After launching `spawn` in the TSX, there is no need to hook again. To avoid any adverse effects, revert the `spawn`.
+   */
+  childProcess.spawn = oldSpawn;
+  return result;
 };
+
 import('tsx/cli');

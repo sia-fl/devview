@@ -1,7 +1,8 @@
 {
   "name": "devview",
   "scripts": {
-    "lint": "prettier --write ."
+    "lint": "prettier --write .",
+    "test": "vitest"
   },
   "workspaces": [
     "package\\*"

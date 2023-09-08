@@ -1,9 +1,9 @@
 {
   "name": "tsxx",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "tsx 增强",
   "scripts": {
-    "build": "node build.mjs && cp src/* dist/",
+    "build": "node build.mjs && cp -r src/* dist/",
     "lint": "prettier --write ."
   },
   "files": [
