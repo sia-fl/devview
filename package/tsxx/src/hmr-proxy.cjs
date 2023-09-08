@@ -11,22 +11,12 @@ const relationModuleFilenames = {};
  */
 const aliveFilenames = [pathname];
 
-const { Debounce } = require('./util.js');
-
-const { hookServices, unblocks } = require('./hmr-hook.js');
-
-hookServices();
-
 const Module = require('node:module');
 // noinspection JSUnresolvedReference
 const oldLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   const loaded = oldLoad.call(this, request, parent, isMain);
-  if (
-    parent &&
-    !/node_modules/.test(parent.filename) &&
-    !/package\\modmgr\\src\\hmr-proxy.cjs/.test(parent.filename)
-  ) {
+  if (parent && !/node_modules/.test(parent.filename) && !/package\\tsxx\\/.test(parent.filename)) {
     const { filename, children } = parent;
     if (!aliveFilenames.includes(filename)) {
       aliveFilenames.push(filename);
@@ -67,17 +57,19 @@ const cleanModuleCache = filename => {
   }
 };
 
+const { Debounce } = require('./util.js');
+const { hookServices, unblocks } = require('./hmr-hook.js');
+hookServices();
 const debouncedFunc = new Debounce(freshFilename => {
-  if (aliveFilenames.includes(freshFilename)) {
-    unblocks().then(() => {
-      cleanModuleCache(freshFilename);
-      try {
-        require(pathname);
-      } catch (e) {
-        console.error(e);
-      }
-    });
-  }
+  unblocks().then(() => {
+    cleanModuleCache(freshFilename);
+    try {
+      aliveFilenames.push(pathname);
+      require(pathname);
+    } catch (e) {
+      console.error(e);
+    }
+  });
 }, 500);
 
 /**
@@ -85,7 +77,7 @@ const debouncedFunc = new Debounce(freshFilename => {
  */
 const chokidar = require('chokidar');
 chokidar.watch(process.cwd()).on('change', freshFilename => {
-  if (!/node_modules/.test(freshFilename) && !/idea/.test(freshFilename)) {
+  if (aliveFilenames.includes(freshFilename)) {
     debouncedFunc.call(freshFilename);
   }
 });
