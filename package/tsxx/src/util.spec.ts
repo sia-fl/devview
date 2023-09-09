@@ -4,7 +4,7 @@ import { getSpawnArgs, Debounce, getLoaderArgs, getPackageGlobHmrFiles } from '.
 import * as path from 'path';
 
 test('get package glob hmr files', () => {
-  let cwd = path.join(process.cwd(), 'src/test/glob');
+  let cwd = path.join(__dirname, '/test/glob');
   const files = getPackageGlobHmrFiles(cwd);
   expect(files).toEqual([
     path.join(cwd, 'src/demo03.ts'),

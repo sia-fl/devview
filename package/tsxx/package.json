@@ -3,7 +3,7 @@
   "version": "1.0.13",
   "description": "tsx 增强",
   "scripts": {
-    "build": "node build.mjs && cp -r src/* dist/",
+    "build": "node build.mjs",
     "lint": "prettier --write .",
     "test": "vitest"
   },
@@ -17,7 +17,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "chokidar": "^3.5.3",
-    "glob": "^10.3.4",
     "tsx": "^3.12.8"
   }
 }
