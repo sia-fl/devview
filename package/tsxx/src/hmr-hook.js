@@ -8,8 +8,8 @@ const services = [];
 
 const hookNetServer = () => {
   const oldCreateServer = net.createServer;
-  net.createServer = requestListener => {
-    const server = oldCreateServer.call(this, requestListener);
+  net.createServer = (...args) => {
+    const server = oldCreateServer.call(this, ...args);
     services.push(server);
     return server;
   };
@@ -18,8 +18,8 @@ const hookNetServer = () => {
 const hookHttpServer = () => {
   const http = require('http');
   const oldCreateServer = http.createServer;
-  http.createServer = requestListener => {
-    const server = oldCreateServer.call(this, requestListener);
+  http.createServer = (...args) => {
+    const server = oldCreateServer.call(this, ...args);
     services.push(server);
     return server;
   };

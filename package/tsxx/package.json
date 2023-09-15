@@ -1,6 +1,6 @@
 {
   "name": "tsxx",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "tsx 增强",
   "scripts": {
     "build": "node build.mjs",
